@@ -25,6 +25,7 @@ package org.jboss.seam.forge.test.project.facets.impl;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.seam.forge.project.Project;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 import org.jboss.seam.forge.project.facets.MavenCoreFacet;
 import org.jboss.seam.forge.project.facets.builtin.MavenPluginFacet;
 import org.jboss.seam.forge.project.facets.builtin.PluginNotFoundException;
@@ -55,172 +56,162 @@ import static org.junit.Assert.*;
  */
 @Singleton
 @RunWith(Arquillian.class)
-public class MavenPluginFacetTest extends ProjectModelTest
-{
-   @Inject
-   private ProjectFactory projectFactory;
+public class MavenPluginFacetTest extends ProjectModelTest {
+    @Inject
+    private ProjectFactory projectFactory;
 
-   @Inject
-   private ResourceFactory resourceFactory;
+    @Inject
+    private ResourceFactory resourceFactory;
 
-   private static Project testProject;
-
-
-   @Deployment
-   public static JavaArchive getTestArchive()
-   {
-      return createTestArchive()
-              .addManifestResource(
-                      "META-INF/services/org.jboss.seam.forge.project.dependencies.DependencyResolverProvider");
-   }
-
-   @Before
-   @Override
-   public void postConstruct() throws IOException
-   {
-
-      project = null;
-      super.postConstruct();
-
-      if (testProject == null)
-      {
-         testProject = projectFactory.findProjectRecursively(
-                 ResourceUtil.getContextDirectory(resourceFactory.getResourceFrom(new File(
-                         "src/test/resources/test-pom"))));
-      }
-   }
+    private static Project testProject;
 
 
-   @Test
-   public void testIsInstalled() throws Exception
-   {
-      boolean isInstalled = testProject.hasFacet(MavenPluginFacet.class);
-      assertEquals(true, isInstalled);
-   }
+    @Deployment
+    public static JavaArchive getTestArchive() {
+        return createTestArchive()
+                .addManifestResource(
+                        "META-INF/services/org.jboss.seam.forge.project.dependencies.DependencyResolverProvider");
+    }
 
-   @Test
-   public void testListPlugins() throws Exception
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      List<MavenPlugin> mavenPlugins = mavenPluginFacet.listConfiguredPlugins();
-      assertThat(mavenPlugins.size(), is(3));
-   }
+    @Before
+    @Override
+    public void postConstruct() throws IOException {
 
-   @Test
-   public void testAddPlugin() throws Exception
-   {
+        project = null;
+        super.postConstruct();
 
-      MavenPluginFacet mavenPluginFacet = getProject().getFacet(MavenPluginFacet.class);
-
-      int nrOfPlugins = getNumbeOfPlugins();
-      MavenPluginBuilder plugin = MavenPluginBuilder.create()
-              .setGroupId("org.apache.maven.plugins")
-              .setArtifactId("maven-site-plugin")
-              .setVersion("3.0");
-      mavenPluginFacet.addPlugin(plugin);
-
-      assertThat(getNumbeOfPlugins(), is(nrOfPlugins + 1));
-   }
-
-   private int getNumbeOfPlugins()
-   {
-      MavenCoreFacet mavenCoreFacet = getProject().getFacet(MavenCoreFacet.class);
-      return mavenCoreFacet.getPOM().getBuild().getPlugins().size();
-   }
-
-   @Test
-   public void testHasPlugin()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      boolean hasPlugin = mavenPluginFacet.hasPlugin("org.codehaus.mojo", "findbugs-maven-plugin");
-      assertTrue(hasPlugin);
-   }
-
-   @Test
-   public void testHasPluginForDefaultGroupId()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      boolean hasPlugin = mavenPluginFacet.hasPlugin("org.apache.maven.plugins", "maven-compiler-plugin");
-      assertTrue(hasPlugin);
-   }
+        if (testProject == null) {
+            testProject = projectFactory.findProjectRecursively(
+                    ResourceUtil.getContextDirectory(resourceFactory.getResourceFrom(new File(
+                            "src/test/resources/test-pom"))));
+        }
+    }
 
 
-   @Test
-   public void testHasPluginForNullGroupId()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      boolean hasPlugin = mavenPluginFacet.hasPlugin(null, "maven-compiler-plugin");
-      assertTrue(hasPlugin);
-   }
+    @Test
+    public void testIsInstalled() throws Exception {
+        boolean isInstalled = testProject.hasFacet(MavenPluginFacet.class);
+        assertEquals(true, isInstalled);
+    }
 
-   @Test
-   public void testHasPluginForEmptyGroupId()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      boolean hasPlugin = mavenPluginFacet.hasPlugin("", "maven-compiler-plugin");
-      assertTrue(hasPlugin);
-   }
+    @Test
+    public void testListPlugins() throws Exception {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        List<MavenPlugin> mavenPlugins = mavenPluginFacet.listConfiguredPlugins();
+        assertThat(mavenPlugins.size(), is(3));
+    }
+
+    @Test
+    public void testAddPlugin() throws Exception {
+
+        MavenPluginFacet mavenPluginFacet = getProject().getFacet(MavenPluginFacet.class);
+
+        int nrOfPlugins = getNumberOfPlugins();
+        MavenPluginBuilder plugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.apache.maven.plugins")
+                                .setArtifactId("maven-site-plugin")
+                                .setVersion("3.0")
+                );
+
+        mavenPluginFacet.addPlugin(plugin);
+
+        assertThat(getNumberOfPlugins(), is(nrOfPlugins + 1));
+    }
+
+    private int getNumberOfPlugins() {
+        MavenCoreFacet mavenCoreFacet = getProject().getFacet(MavenCoreFacet.class);
+        return mavenCoreFacet.getPOM().getBuild().getPlugins().size();
+    }
+
+    @Test
+    public void testHasPlugin() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        boolean hasPlugin = mavenPluginFacet.hasPlugin(DependencyBuilder.create("org.codehaus.mojo:findbugs-maven-plugin"));
+        assertTrue(hasPlugin);
+    }
+
+    @Test
+    public void testHasPluginForDefaultGroupId() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        boolean hasPlugin = mavenPluginFacet.hasPlugin(DependencyBuilder.create("org.apache.maven.plugins:maven-compiler-plugin"));
+        assertTrue(hasPlugin);
+    }
 
 
-   @Test
-   public void testHasPluginWhenPluginNotInstalled()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      boolean hasPlugin = mavenPluginFacet.hasPlugin("test.plugins", "fake");
-      assertFalse(hasPlugin);
-   }
+    @Test
+    public void testHasPluginForNullGroupId() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        DependencyBuilder pluginDependency = DependencyBuilder.create().setArtifactId("maven-compiler-plugin");
+        boolean hasPlugin = mavenPluginFacet.hasPlugin(pluginDependency);
+        assertTrue(hasPlugin);
+    }
 
-   @Test
-   public void testGetPlugin()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      MavenPlugin plugin = mavenPluginFacet.getPlugin("org.codehaus.mojo", "findbugs-maven-plugin");
-      assertNotNull(plugin);
-      assertThat(plugin.getArtifactId(), is("findbugs-maven-plugin"));
-      assertThat(plugin.getVersion(), is("2.3.2"));
-   }
+    @Test
+    public void testHasPluginForEmptyGroupId() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        DependencyBuilder pluginDependency = DependencyBuilder.create()
+                .setGroupId("")
+                .setArtifactId("maven-compiler-plugin");
+        boolean hasPlugin = mavenPluginFacet.hasPlugin(pluginDependency);
+        assertTrue(hasPlugin);
+    }
 
-   @Test(expected = PluginNotFoundException.class)
-   public void testGetPluginException()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      mavenPluginFacet.getPlugin("test.plugins", "fake");
-   }
 
-   @Test
-   public void testRemovePlugin()
-   {
-      MavenPluginFacet mavenPluginFacet = getProject().getFacet(MavenPluginFacet.class);
-      int nrOfPlugins = mavenPluginFacet.listConfiguredPlugins().size();
-      mavenPluginFacet.removePlugin("org.apache.maven.plugins", "maven-compiler-plugin");
-      assertThat(mavenPluginFacet.listConfiguredPlugins().size(), is(nrOfPlugins - 1));
-   }
+    @Test
+    public void testHasPluginWhenPluginNotInstalled() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        boolean hasPlugin = mavenPluginFacet.hasPlugin(DependencyBuilder.create("test.plugins:fake"));
+        assertFalse(hasPlugin);
+    }
 
-   @Test
-   public void testAddConfigurationToExistingPlugin()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      MavenPlugin plugin = mavenPluginFacet.getPlugin("org.codehaus.mojo", "findbugs-maven-plugin");
-      MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create(plugin);
+    @Test
+    public void testGetPlugin() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        MavenPlugin plugin = mavenPluginFacet.getPlugin(DependencyBuilder.create("org.codehaus.mojo:findbugs-maven-plugin"));
+        assertNotNull(plugin);
+        assertThat(plugin.getDependency().getArtifactId(), is("findbugs-maven-plugin"));
+        assertThat(plugin.getDependency().getVersion(), is("2.3.2"));
+    }
 
-      pluginBuilder.createConfiguration()
-              .createConfigurationElement("xmlOutput").setText("true");
+    @Test(expected = PluginNotFoundException.class)
+    public void testGetPluginException() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        mavenPluginFacet.getPlugin(DependencyBuilder.create("test.plugins:fake"));
+    }
 
-      assertEquals("<plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin>", pluginBuilder.toString());
-   }
+    @Test
+    public void testRemovePlugin() {
+        MavenPluginFacet mavenPluginFacet = getProject().getFacet(MavenPluginFacet.class);
+        int nrOfPlugins = mavenPluginFacet.listConfiguredPlugins().size();
+        mavenPluginFacet.removePlugin(DependencyBuilder.create("org.apache.maven.plugins:maven-compiler-plugin"));
+        assertThat(mavenPluginFacet.listConfiguredPlugins().size(), is(nrOfPlugins - 1));
+    }
 
-   @Test
-   public void testAddConfigurationToExistingPluginWithConfig()
-   {
-      MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
-      MavenPlugin plugin = mavenPluginFacet.getPlugin("", "maven-compiler-plugin");
-      MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create(plugin);
+    @Test
+    public void testAddConfigurationToExistingPlugin() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        MavenPlugin plugin = mavenPluginFacet.getPlugin(DependencyBuilder.create("org.codehaus.mojo:findbugs-maven-plugin"));
+        MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create(plugin);
 
-      pluginBuilder.createConfiguration()
-              .createConfigurationElement("testelement").setText("test");
+        pluginBuilder.createConfiguration()
+                .createConfigurationElement("xmlOutput").setText("true");
 
-      assertEquals("<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>2.0.2</version><configuration><source>1.6</source><target>1.6</target><testelement>test</testelement></configuration></plugin>", pluginBuilder.toString());
-   }
+        assertEquals("<plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin>", pluginBuilder.toString());
+    }
+
+    @Test
+    public void testAddConfigurationToExistingPluginWithConfig() {
+        MavenPluginFacet mavenPluginFacet = testProject.getFacet(MavenPluginFacet.class);
+        MavenPlugin plugin = mavenPluginFacet.getPlugin(DependencyBuilder.create().setArtifactId("maven-compiler-plugin"));
+        MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create(plugin);
+
+        pluginBuilder.createConfiguration()
+                .createConfigurationElement("testelement").setText("test");
+
+        assertEquals("<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>2.0.2</version><configuration><source>1.6</source><target>1.6</target><testelement>test</testelement></configuration></plugin>", pluginBuilder.toString());
+    }
 }
 
 

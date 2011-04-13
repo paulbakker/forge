@@ -23,6 +23,8 @@
 package org.jboss.seam.forge.project.facets.builtin;
 
 import org.jboss.seam.forge.project.Facet;
+import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 import org.jboss.seam.forge.project.mavenplugins.MavenPlugin;
 
 import java.util.List;
@@ -34,11 +36,11 @@ public interface MavenPluginFacet extends Facet
 {
    List<MavenPlugin> listConfiguredPlugins();
 
-   boolean hasPlugin(String groupdId, String artifactId);
+   boolean hasPlugin(Dependency dependency);
 
-   MavenPlugin getPlugin(String groupdId, String artifactId);
+   MavenPlugin getPlugin(Dependency dependency);
 
    void addPlugin(MavenPlugin plugin);
 
-   void removePlugin(String groupId, String artifactId);
+   void removePlugin(Dependency dependency);
 }

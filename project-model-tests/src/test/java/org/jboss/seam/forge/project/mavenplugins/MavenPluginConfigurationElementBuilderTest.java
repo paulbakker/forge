@@ -22,6 +22,7 @@
 
 package org.jboss.seam.forge.project.mavenplugins;
 
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,169 +30,181 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:paul.bakker.nl@gmail.com">Paul Bakker</a>
  */
-public class MavenPluginConfigurationElementBuilderTest
-{
-   private static final String XML = "<additionalClasspathElements><additionalClasspathElement>test</additionalClasspathElement></additionalClasspathElements>";
-   private static final String XML_WITH_SUB_PLUGIN = "<reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version></plugin></reportPlugins>";
-   private static final String XML_WITH_SUB_PLUGIN_AND_CONFIGURATION = "<reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin></reportPlugins>";
+public class MavenPluginConfigurationElementBuilderTest {
+    private static final String XML = "<additionalClasspathElements><additionalClasspathElement>test</additionalClasspathElement></additionalClasspathElements>";
+    private static final String XML_WITH_SUB_PLUGIN = "<reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version></plugin></reportPlugins>";
+    private static final String XML_WITH_SUB_PLUGIN_AND_CONFIGURATION = "<reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin></reportPlugins>";
 
-   private static final String COMPILER_PLUGIN = "<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><source>1.6</source><target>1.6</target></configuration></plugin>";
-   private static final String SITE_PLUGIN = "<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-site-plugin</artifactId><version>3.0</version><configuration><reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin></reportPlugins></configuration></plugin>";
-   private static final String EAR_PLUGIN = "<plugin><artifactId>maven-ear-plugin</artifactId><version>2.5</version><configuration><modules><webModule><groupId>mygroupid</groupId><artifactId>myartifact</artifactId><contextRoot>/myapp</contextRoot></webModule></modules></configuration></plugin>";
+    private static final String COMPILER_PLUGIN = "<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><source>1.6</source><target>1.6</target></configuration></plugin>";
+    private static final String SITE_PLUGIN = "<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-site-plugin</artifactId><version>3.0</version><configuration><reportPlugins><plugin><groupId>org.codehaus.mojo</groupId><artifactId>findbugs-maven-plugin</artifactId><version>2.3.2</version><configuration><xmlOutput>true</xmlOutput></configuration></plugin></reportPlugins></configuration></plugin>";
+    private static final String EAR_PLUGIN = "<plugin><artifactId>maven-ear-plugin</artifactId><version>2.5</version><configuration><modules><webModule><groupId>mygroupid</groupId><artifactId>myartifact</artifactId><contextRoot>/myapp</contextRoot></webModule></modules></configuration></plugin>";
 
-   @Test
-   public void testCreateConfigElement()
-   {
-      MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
-              .setName("additionalClasspathElements")
-              .addChild("additionalClasspathElement").setText("test").getParentElement();
+    @Test
+    public void testCreateConfigElement() {
+        MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
+                .setName("additionalClasspathElements")
+                .addChild("additionalClasspathElement").setText("test").getParentElement();
 
-      assertEquals(XML, builder.toString());
+        assertEquals(XML, builder.toString());
 
-   }
+    }
 
-   @Test
-   public void testCreateWithSubPlugin()
-   {
-      MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
-              .setGroupId("org.codehaus.mojo")
-              .setArtifactId("findbugs-maven-plugin")
-              .setVersion("2.3.2");
+    @Test
+    public void testCreateWithSubPlugin() {
+        MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.codehaus.mojo")
+                                .setArtifactId("findbugs-maven-plugin")
+                                .setVersion("2.3.2")
+                );
 
-      MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
-              .setName("reportPlugins")
-              .addChild(findbugsPlugin);
+        MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
+                .setName("reportPlugins")
+                .addChild(findbugsPlugin);
 
-      assertEquals(XML_WITH_SUB_PLUGIN, builder.toString());
+        assertEquals(XML_WITH_SUB_PLUGIN, builder.toString());
 
-   }
+    }
 
-   @Test
-   public void testCreateWithSubPluginWithConfiguration()
-   {
-      MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
-              .setGroupId("org.codehaus.mojo")
-              .setArtifactId("findbugs-maven-plugin")
-              .setVersion("2.3.2")
-              .createConfiguration()
-              .createConfigurationElement("xmlOutput").setText("true").getParentPluginConfig()
-              .getOrigin();
-
-
-      MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
-              .setName("reportPlugins")
-              .addChild(findbugsPlugin);
-
-      assertEquals(XML_WITH_SUB_PLUGIN_AND_CONFIGURATION, builder.toString());
-
-   }
-
-   @Test
-   public void testCreateCompilerPlugin()
-   {
-      /*
-      OUTPUT: ----------------
-
-         <plugin>
-             <groupId>org.apache.maven.plugins</groupId>
-             <artifactId>maven-compiler-plugin</artifactId>
-             <configuration>
-                 <source>1.6</source>
-                 <target>1.6</target>
-             </configuration>
-         </plugin>
-
-      ---------------------
-      */
-
-      MavenPluginBuilder compilerPlugin = MavenPluginBuilder.create()
-              .setGroupId("org.apache.maven.plugins")
-              .setArtifactId("maven-compiler-plugin")
-              .createConfiguration().createConfigurationElement("source").setText("1.6").getParentPluginConfig()
-              .createConfigurationElement("target").setText("1.6").getParentPluginConfig().getOrigin();
+    @Test
+    public void testCreateWithSubPluginWithConfiguration() {
+        MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.codehaus.mojo")
+                                .setArtifactId("findbugs-maven-plugin")
+                                .setVersion("2.3.2")
+                )
+                .createConfiguration()
+                .createConfigurationElement("xmlOutput").setText("true").getParentPluginConfig()
+                .getOrigin();
 
 
-      assertEquals(COMPILER_PLUGIN, compilerPlugin.toString());
-   }
+        MavenPluginConfigurationElementBuilder builder = MavenPluginConfigurationElementBuilder.create()
+                .setName("reportPlugins")
+                .addChild(findbugsPlugin);
 
-   @Test
-   public void testCreateSitePlugin()
-   {
-      /*
-       OUTPUT: ----------------
+        assertEquals(XML_WITH_SUB_PLUGIN_AND_CONFIGURATION, builder.toString());
+
+    }
+
+    @Test
+    public void testCreateCompilerPlugin() {
+        /*
+        OUTPUT: ----------------
 
            <plugin>
-             <groupId>org.apache.maven.plugins</groupId>
-             <artifactId>maven-site-plugin</artifactId>
-             <version>3.0</version>
-             <configuration>
-                 <reportPlugins>
-                     <plugin>
-                         <groupId>org.codehaus.mojo</groupId>
-                         <artifactId>findbugs-maven-plugin</artifactId>
-                         <version>2.3.2</version>
-                         <configuration>
-                             <xmlOutput>true</xmlOutput>
-                         </configuration>
-                     </plugin>
-                 </reportPlugins>
-             </configuration>
-         </plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <configuration>
+                   <source>1.6</source>
+                   <target>1.6</target>
+               </configuration>
+           </plugin>
 
-         ---------------------
-      */
+        ---------------------
+        */
 
-      MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
-              .setGroupId("org.codehaus.mojo")
-              .setArtifactId("findbugs-maven-plugin")
-              .setVersion("2.3.2").createConfiguration()
-              .createConfigurationElement("xmlOutput")
-              .setText("true").getParentPluginConfig().getOrigin();
-
-      MavenPlugin sitePlugin = MavenPluginBuilder.create()
-              .setGroupId("org.apache.maven.plugins")
-              .setArtifactId("maven-site-plugin")
-              .setVersion("3.0")
-              .createConfiguration().createConfigurationElement("reportPlugins").addChild(findbugsPlugin).getParentPluginConfig().getOrigin();
+        MavenPluginBuilder compilerPlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.apache.maven.plugins")
+                                .setArtifactId("maven-compiler-plugin")
+                )
+                .createConfiguration().createConfigurationElement("source").setText("1.6").getParentPluginConfig()
+                .createConfigurationElement("target").setText("1.6").getParentPluginConfig().getOrigin();
 
 
-      assertEquals(SITE_PLUGIN, sitePlugin.toString());
-   }
+        assertEquals(COMPILER_PLUGIN, compilerPlugin.toString());
+    }
+
+    @Test
+    public void testCreateSitePlugin() {
+        /*
+         OUTPUT: ----------------
+
+             <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-site-plugin</artifactId>
+               <version>3.0</version>
+               <configuration>
+                   <reportPlugins>
+                       <plugin>
+                           <groupId>org.codehaus.mojo</groupId>
+                           <artifactId>findbugs-maven-plugin</artifactId>
+                           <version>2.3.2</version>
+                           <configuration>
+                               <xmlOutput>true</xmlOutput>
+                           </configuration>
+                       </plugin>
+                   </reportPlugins>
+               </configuration>
+           </plugin>
+
+           ---------------------
+        */
+
+        MavenPluginBuilder findbugsPlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.codehaus.mojo")
+                                .setArtifactId("findbugs-maven-plugin")
+                                .setVersion("2.3.2")
+                )
+                .createConfiguration()
+                .createConfigurationElement("xmlOutput")
+                .setText("true").getParentPluginConfig().getOrigin();
+
+        MavenPlugin sitePlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setGroupId("org.apache.maven.plugins")
+                                .setArtifactId("maven-site-plugin")
+                                .setVersion("3.0")
+                )
+                .createConfiguration().createConfigurationElement("reportPlugins").addChild(findbugsPlugin).getParentPluginConfig().getOrigin();
 
 
-   @Test
-   public void testCreateEarPlugin()
-   {
-      /* OUTPUT --------------
-
-      <plugin>
-         <artifactId>maven-ear-plugin</artifactId>
-         <version>2.5</version>
-         <configuration>
-            <modules>
-                  <webModule>
-                     <groupId>mygroupid</groupId>
-                     <artifactId>myartifact</artifactId>
-                     <contextRoot>/myapp</contextRoot>
-                  </webModule>
-            </modules>
-         </configuration>
-      </plugin>
-
-      -----------------------
-      */
+        assertEquals(SITE_PLUGIN, sitePlugin.toString());
+    }
 
 
-      MavenPluginBuilder earPlugin = MavenPluginBuilder.create()
-              .setArtifactId("maven-ear-plugin")
-              .setVersion("2.5")
-              .createConfiguration()
-              .createConfigurationElement("modules")
-              .createConfigurationElement("webModule")
-              .createConfigurationElement("groupId").setText("mygroupid").getParentElement()
-              .createConfigurationElement("artifactId").setText("myartifact").getParentElement()
-              .createConfigurationElement("contextRoot").setText("/myapp").getParentElement().getParentElement().getParentPluginConfig().getOrigin();
+    @Test
+    public void testCreateEarPlugin() {
+        /* OUTPUT --------------
 
-      assertEquals(EAR_PLUGIN, earPlugin.toString());
-   }
+        <plugin>
+           <artifactId>maven-ear-plugin</artifactId>
+           <version>2.5</version>
+           <configuration>
+              <modules>
+                    <webModule>
+                       <groupId>mygroupid</groupId>
+                       <artifactId>myartifact</artifactId>
+                       <contextRoot>/myapp</contextRoot>
+                    </webModule>
+              </modules>
+           </configuration>
+        </plugin>
+
+        -----------------------
+        */
+
+
+        MavenPluginBuilder earPlugin = MavenPluginBuilder.create()
+                .setDependency(
+                        DependencyBuilder.create()
+                                .setArtifactId("maven-ear-plugin")
+                                .setVersion("2.5")
+                )
+                .createConfiguration()
+                .createConfigurationElement("modules")
+                .createConfigurationElement("webModule")
+                .createConfigurationElement("groupId").setText("mygroupid").getParentElement()
+                .createConfigurationElement("artifactId").setText("myartifact").getParentElement()
+                .createConfigurationElement("contextRoot").setText("/myapp").getParentElement().getParentElement().getParentPluginConfig().getOrigin();
+
+        assertEquals(EAR_PLUGIN, earPlugin.toString());
+    }
 }

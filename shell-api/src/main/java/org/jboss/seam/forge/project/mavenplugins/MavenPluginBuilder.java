@@ -22,93 +22,66 @@
 
 package org.jboss.seam.forge.project.mavenplugins;
 
+import org.jboss.seam.forge.project.dependencies.Dependency;
+
 /**
  * @author <a href="mailto:paul.bakker.nl@gmail.com">Paul Bakker</a>
  */
-public class MavenPluginBuilder implements MavenPlugin, MavenPluginElement
-{
-   private MavenPluginImpl plugin = new MavenPluginImpl();
+public class MavenPluginBuilder implements MavenPlugin, MavenPluginElement {
+    private MavenPluginImpl plugin = new MavenPluginImpl();
 
-   private MavenPluginBuilder()
-   {
-   }
+    private MavenPluginBuilder() {
+    }
 
-   private MavenPluginBuilder(MavenPlugin plugin)
-   {
-      this.plugin = new MavenPluginImpl(plugin);
-   }
+    private MavenPluginBuilder(MavenPlugin plugin) {
+        this.plugin = new MavenPluginImpl(plugin);
+    }
 
-   public static MavenPluginBuilder create()
-   {
-      return new MavenPluginBuilder();
-   }
+    public static MavenPluginBuilder create() {
+        return new MavenPluginBuilder();
+    }
 
-   public static MavenPluginBuilder create(MavenPlugin plugin)
-   {
-      return new MavenPluginBuilder(plugin);
-   }
+    public static MavenPluginBuilder create(MavenPlugin plugin) {
+        return new MavenPluginBuilder(plugin);
+    }
 
-   public MavenPluginBuilder setGroupId(String groupId)
-   {
-      plugin.setGroupId(groupId);
-      return this;
-   }
+    public MavenPluginBuilder setConfiguration(MavenPluginConfiguration configuration) {
+        plugin.setConfiguration(configuration);
+        return this;
+    }
 
-   public MavenPluginBuilder setArtifactId(String artifactId)
-   {
-      plugin.setArtifactId(artifactId);
-      return this;
-   }
+    @Override
+    public Dependency getDependency() {
+        return plugin.getDependency();
+    }
 
-   public MavenPluginBuilder setVersion(String version)
-   {
-      plugin.setVersion(version);
-      return this;
-   }
+    public MavenPluginBuilder setDependency(Dependency dependency) {
+        plugin.setDependency(dependency);
+        return this;
+    }
 
-   public MavenPluginBuilder setConfiguration(MavenPluginConfiguration configuration)
-   {
-      plugin.setConfiguration(configuration);
-      return this;
-   }
+    @Override
+    public MavenPluginConfiguration getPluginConfiguration() {
+        return plugin.getPluginConfiguration();
+    }
 
-   @Override public String getGroupId()
-   {
-      return plugin.getGroupId();
-   }
+    @Override
+    public String toString() {
+        return plugin.toString();
+    }
 
-   @Override public String getArtifactId()
-   {
-      return plugin.getArtifactId();
-   }
 
-   @Override public String getVersion()
-   {
-      return plugin.getVersion();
-   }
+    public MavenPluginConfigurationBuilder createConfiguration() {
+        MavenPluginConfigurationBuilder builder;
+        if (plugin.getPluginConfiguration() != null) {
+            builder = MavenPluginConfigurationBuilder.create(plugin.getPluginConfiguration(), this);
+        } else {
+            builder = MavenPluginConfigurationBuilder.create(this);
+        }
 
-   @Override public MavenPluginConfiguration getPluginConfiguration()
-   {
-      return plugin.getPluginConfiguration();
-   }
+        plugin.setConfiguration(builder);
 
-   @Override public String toString()
-   {
-      return plugin.toString();
-   }
-
-   public MavenPluginConfigurationBuilder createConfiguration()
-   {
-      MavenPluginConfigurationBuilder builder;
-      if(plugin.getPluginConfiguration() != null) {
-         builder = MavenPluginConfigurationBuilder.create(plugin.getPluginConfiguration(), this);
-      }  else {
-         builder = MavenPluginConfigurationBuilder.create(this);
-      }
-
-      plugin.setConfiguration(builder);
-
-      return builder;
-   }
+        return builder;
+    }
 }
 

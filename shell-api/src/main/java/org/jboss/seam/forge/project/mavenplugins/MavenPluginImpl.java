@@ -22,94 +22,63 @@
 
 package org.jboss.seam.forge.project.mavenplugins;
 
+import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
+
 /**
  * @author <a href="mailto:paul.bakker.nl@gmail.com">Paul Bakker</a>
  */
-public class MavenPluginImpl implements MavenPlugin
-{
-   private String groupId;
-   private String artifactId;
-   private String version;
-   private MavenPluginConfiguration configuration;
+public class MavenPluginImpl implements MavenPlugin {
+    private Dependency dependency;
+    private MavenPluginConfiguration configuration;
 
-   public MavenPluginImpl()
-   {
-   }
+    public MavenPluginImpl() {
+    }
 
-   public MavenPluginImpl(MavenPlugin plugin) {
-      this.groupId = plugin.getGroupId();
-      this.artifactId = plugin.getArtifactId();
-      this.version = plugin.getVersion();
-      this.configuration = plugin.getPluginConfiguration();
-   }
+    public MavenPluginImpl(MavenPlugin plugin) {
+        this.dependency = plugin.getDependency();
+        this.configuration = plugin.getPluginConfiguration();
+    }
 
-   @Override
-   public String getGroupId()
-   {
-      if(groupId == null) {
-         return "org.apache.maven.plugins";
-      }
 
-      return groupId;
-   }
+    @Override
+    public Dependency getDependency() {
+        return dependency;
+    }
 
-   public void setGroupId(String groupId)
-   {
-      this.groupId = groupId;
-   }
+    public void setDependency(Dependency dependency) {
+        this.dependency = dependency;
+    }
 
-   @Override
-   public String getArtifactId()
-   {
-      return artifactId;
-   }
+    @Override
+    public MavenPluginConfiguration getPluginConfiguration() {
+        return configuration;
+    }
 
-   public void setArtifactId(String artifactId)
-   {
-      this.artifactId = artifactId;
-   }
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder("<plugin>");
+        if (dependency.getGroupId() != null) {
+            b.append("<groupId>").append(dependency.getGroupId()).append("</groupId>");
+        }
 
-   @Override
-   public String getVersion()
-   {
-      return version;
-   }
+        if (dependency.getArtifactId() != null) {
+            b.append("<artifactId>").append(dependency.getArtifactId()).append("</artifactId>");
+        }
 
-   public void setVersion(String version)
-   {
-      this.version = version;
-   }
+        if (dependency.getVersion() != null) {
+            b.append("<version>").append(dependency.getVersion()).append("</version>");
+        }
 
-   @Override public MavenPluginConfiguration getPluginConfiguration()
-   {
-      return configuration;
-   }
+        if (configuration != null) {
+            b.append(configuration.toString());
+        }
 
-   @Override public String toString()
-   {
-      StringBuilder b = new StringBuilder("<plugin>");
-      if(groupId != null) {
-         b.append("<groupId>").append(groupId).append("</groupId>");
-      }
+        b.append("</plugin>");
+        return b.toString();
+    }
 
-      if(artifactId != null) {
-         b.append("<artifactId>").append(artifactId).append("</artifactId>");
-      }
-
-      if(version != null) {
-         b.append("<version>").append(version).append("</version>");
-      }
-
-      if(configuration != null) {
-         b.append(configuration.toString());
-      }
-
-      b.append("</plugin>");
-      return b.toString();
-   }
-
-   public void setConfiguration(MavenPluginConfiguration configuration)
-   {
-      this.configuration = configuration;
-   }
+    public void setConfiguration(MavenPluginConfiguration configuration) {
+        this.configuration = configuration;
+    }
 }

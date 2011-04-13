@@ -25,6 +25,8 @@ package org.jboss.seam.forge.project.mavenplugins;
 import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 
 import java.io.ByteArrayInputStream;
 
@@ -32,49 +34,52 @@ import java.io.ByteArrayInputStream;
  * @author <a href="mailto:paul.bakker.nl@gmail.com">Paul Bakker</a>
  */
 
-public class MavenPluginAdapter extends Plugin implements MavenPlugin
-{
-   public MavenPluginAdapter(MavenPlugin mavenPlugin)
-   {
-      setGroupId(mavenPlugin.getGroupId());
-      setArtifactId(mavenPlugin.getArtifactId());
-      setVersion(mavenPlugin.getVersion());
-      setConfiguration(parseConfig(mavenPlugin));
-   }
+public class MavenPluginAdapter extends Plugin implements MavenPlugin {
+    public MavenPluginAdapter(MavenPlugin mavenPlugin) {
+        Dependency dependency = mavenPlugin.getDependency();
 
-   private Xpp3Dom parseConfig(MavenPlugin mavenPlugin)
-   {
-      if (mavenPlugin.getPluginConfiguration() == null)
-      {
-         return null;
-      }
+        setGroupId(dependency.getGroupId());
+        setArtifactId(dependency.getArtifactId());
+        setVersion(dependency.getVersion());
+        setConfiguration(parseConfig(mavenPlugin));
+    }
 
-      try
-      {
-         return Xpp3DomBuilder.build(
-                 new ByteArrayInputStream(
-                         mavenPlugin.getPluginConfiguration().toString().getBytes()), "UTF-8");
-      } catch (Exception ex)
-      {
-         throw new RuntimeException("Exception while parsing configuration", ex);
-      }
-   }
+    private Xpp3Dom parseConfig(MavenPlugin mavenPlugin) {
+        if (mavenPlugin.getPluginConfiguration() == null) {
+            return null;
+        }
 
-   public MavenPluginAdapter(Plugin plugin)
-   {
-      Plugin clone = plugin.clone();
+        try {
+            return Xpp3DomBuilder.build(
+                    new ByteArrayInputStream(
+                            mavenPlugin.getPluginConfiguration().toString().getBytes()), "UTF-8");
+        } catch (Exception ex) {
+            throw new RuntimeException("Exception while parsing configuration", ex);
+        }
+    }
 
-      setGroupId(clone.getGroupId());
-      setArtifactId(clone.getArtifactId());
-      setVersion(clone.getVersion());
-      setConfiguration(plugin.getConfiguration());
-   }
+    public MavenPluginAdapter(Plugin plugin) {
+        Plugin clone = plugin.clone();
 
-   @Override public MavenPluginConfiguration getPluginConfiguration()
-   {
-      Xpp3Dom dom = (Xpp3Dom) super.getConfiguration();
+        setGroupId(clone.getGroupId());
+        setArtifactId(clone.getArtifactId());
+        setVersion(clone.getVersion());
+        setConfiguration(plugin.getConfiguration());
+    }
+
+    @Override
+    public MavenPluginConfiguration getPluginConfiguration() {
+        Xpp3Dom dom = (Xpp3Dom) super.getConfiguration();
 
 
-      return new MavenPluginConfigurationImpl(dom);
-   }
+        return new MavenPluginConfigurationImpl(dom);
+    }
+
+    @Override
+    public Dependency getDependency() {
+        return DependencyBuilder.create()
+                .setGroupId(getGroupId())
+                .setArtifactId(getArtifactId())
+                .setVersion(getVersion());
+    }
 }

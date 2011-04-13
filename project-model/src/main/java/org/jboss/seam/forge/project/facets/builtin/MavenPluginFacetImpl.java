@@ -25,6 +25,8 @@ package org.jboss.seam.forge.project.facets.builtin;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.jboss.seam.forge.project.Facet;
+import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 import org.jboss.seam.forge.project.facets.BaseFacet;
 import org.jboss.seam.forge.project.facets.FacetNotFoundException;
 import org.jboss.seam.forge.project.facets.MavenCoreFacet;
@@ -45,101 +47,100 @@ import java.util.List;
 @Dependent
 @Alias("forge.maven.MavenPluginFacet")
 @RequiresFacet(MavenCoreFacet.class)
-public class MavenPluginFacetImpl extends BaseFacet implements MavenPluginFacet, Facet
-{
-   private static final String DEFAULT_GROUPID = "org.apache.maven.plugins";
+public class MavenPluginFacetImpl extends BaseFacet implements MavenPluginFacet, Facet {
+    private static final String DEFAULT_GROUPID = "org.apache.maven.plugins";
 
-   @Override public boolean install()
-   {
-      return true;
-   }
+    @Override
+    public boolean install() {
+        return true;
+    }
 
-   @Override public boolean isInstalled()
-   {
-      try
-      {
-         project.getFacet(MavenCoreFacet.class);
-         return true;
-      } catch (FacetNotFoundException e)
-      {
-         return false;
-      }
-   }
+    @Override
+    public boolean isInstalled() {
+        try {
+            project.getFacet(MavenCoreFacet.class);
+            return true;
+        } catch (FacetNotFoundException e) {
+            return false;
+        }
+    }
 
-   @Override public List<MavenPlugin> listConfiguredPlugins()
-   {
-      MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
-      List<Plugin> pomPlugins = mavenCoreFacet.getPOM().getBuild().getPlugins();
-      List<MavenPlugin> plugins = new ArrayList<MavenPlugin>();
+    @Override
+    public List<MavenPlugin> listConfiguredPlugins() {
+        MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
+        List<Plugin> pomPlugins = mavenCoreFacet.getPOM().getBuild().getPlugins();
+        List<MavenPlugin> plugins = new ArrayList<MavenPlugin>();
 
-      for (Plugin plugin : pomPlugins)
-      {
-         MavenPluginAdapter adapter = new MavenPluginAdapter(plugin);
-         MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create()
-                 .setGroupId(plugin.getGroupId())
-                 .setArtifactId(plugin.getArtifactId())
-                 .setVersion(plugin.getVersion())
-                 .setConfiguration(adapter.getPluginConfiguration());
+        for (Plugin plugin : pomPlugins) {
+            MavenPluginAdapter adapter = new MavenPluginAdapter(plugin);
+            MavenPluginBuilder pluginBuilder = MavenPluginBuilder.create()
+                    .setDependency(
+                            DependencyBuilder.create()
+                                    .setGroupId(plugin.getGroupId())
+                                    .setArtifactId(plugin.getArtifactId())
+                                    .setVersion(plugin.getVersion()))
 
-         plugins.add(pluginBuilder);
-      }
+                    .setConfiguration(adapter.getPluginConfiguration());
 
-      return plugins;
+            plugins.add(pluginBuilder);
+        }
 
-   }
+        return plugins;
 
-   @Override public void addPlugin(MavenPlugin plugin)
-   {
-      MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
-      Model pom = mavenCoreFacet.getPOM();
-      pom.getBuild().addPlugin(new MavenPluginAdapter(plugin));
-      mavenCoreFacet.setPOM(pom);
-   }
+    }
 
-   @Override public boolean hasPlugin(String groupId, String artifactId)
-   {
-      try
-      {
-         getPlugin(groupId, artifactId);
-         return true;
-      } catch (PluginNotFoundException ex)
-      {
-         return false;
-      }
-   }
+    @Override
+    public void addPlugin(MavenPlugin plugin) {
+        MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
+        Model pom = mavenCoreFacet.getPOM();
+        pom.getBuild().addPlugin(new MavenPluginAdapter(plugin));
+        mavenCoreFacet.setPOM(pom);
+    }
 
-   @Override public MavenPlugin getPlugin(String groupdId, String artifactId)
-   {
-      if (groupdId == null || groupdId.equals(""))
-      {
-         groupdId = DEFAULT_GROUPID;
-      }
+    @Override
+    public boolean hasPlugin(Dependency dependency) {
+        try {
+            getPlugin(dependency);
+            return true;
+        } catch (PluginNotFoundException ex) {
+            return false;
+        }
+    }
 
-      for (MavenPlugin mavenPlugin : listConfiguredPlugins())
-      {
-         if (mavenPlugin.getGroupId().equals(groupdId) && mavenPlugin.getArtifactId().equals(artifactId))
-         {
-            return mavenPlugin;
-         }
-      }
+    @Override
+    public MavenPlugin getPlugin(Dependency dependency) {
+        String groupId = dependency.getGroupId();
+        String artifactId = dependency.getArtifactId();
 
-      throw new PluginNotFoundException(groupdId, artifactId);
+        if (groupId == null || groupId.equals("")) {
+            groupId = DEFAULT_GROUPID;
+        }
 
-   }
+        for (MavenPlugin mavenPlugin : listConfiguredPlugins()) {
 
-   @Override public void removePlugin(String groupId, String artifactId)
-   {
-      MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
-      List<Plugin> pomPlugins = mavenCoreFacet.getPOM().getBuild().getPlugins();
-      for (Plugin pomPlugin : pomPlugins)
-      {
-         if (pomPlugin.getGroupId().equals(groupId) && pomPlugin.getArtifactId().equals(artifactId))
-         {
-            Model pom = mavenCoreFacet.getPOM();
-            pom.getBuild().removePlugin(pomPlugin);
-            mavenCoreFacet.setPOM(pom);
-         }
-      }
+            if (mavenPlugin.getDependency().getGroupId().equals(groupId)
+                    && mavenPlugin.getDependency().getArtifactId().equals(artifactId)) {
 
-   }
+                return mavenPlugin;
+            }
+        }
+
+        throw new PluginNotFoundException(groupId, artifactId);
+
+    }
+
+    @Override
+    public void removePlugin(Dependency dependency) {
+        MavenCoreFacet mavenCoreFacet = project.getFacet(MavenCoreFacet.class);
+        List<Plugin> pomPlugins = mavenCoreFacet.getPOM().getBuild().getPlugins();
+        for (Plugin pomPlugin : pomPlugins) {
+            if (pomPlugin.getGroupId().equals(dependency.getGroupId())
+                    && pomPlugin.getArtifactId().equals(dependency.getArtifactId())) {
+                Model pom = mavenCoreFacet.getPOM();
+                pom.getBuild().removePlugin(pomPlugin);
+                mavenCoreFacet.setPOM(pom);
+            }
+        }
+
+    }
 }

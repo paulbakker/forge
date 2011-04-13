@@ -22,6 +22,8 @@
 
 package org.jboss.seam.forge.project.mavenplugins;
 
+import org.jboss.seam.forge.project.dependencies.Dependency;
+
 /**
  * Represents a Maven plugin
  *
@@ -30,20 +32,7 @@ package org.jboss.seam.forge.project.mavenplugins;
 
 public interface MavenPlugin extends MavenPluginElement
 {
-   /**
-    * Get the minor-identifier for this {@link MavenPlugin}.
-    */
-   String getArtifactId();
-
-   /**
-    * Get the major identifier for this {@link MavenPlugin}.
-    */
-   String getGroupId();
-
-   /**
-    * Get the version of this {@link MavenPlugin}.
-    */
-   String getVersion();
+   Dependency getDependency();
 
    MavenPluginConfiguration getPluginConfiguration();
 }
