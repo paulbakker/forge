@@ -41,7 +41,7 @@ public class MavenPluginAdapterTest
    public void testGetPluginConfiguration() throws Exception
    {
       MavenPluginAdapter adapter = new MavenPluginAdapter(createMavenPlugin());
-      MavenPluginConfiguration pluginConfiguration = adapter.getPluginConfiguration();
+      MavenPluginConfiguration pluginConfiguration = adapter.getConfig();
       assertNotNull(pluginConfiguration);
    }
 

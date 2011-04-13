@@ -80,7 +80,7 @@ public class MavenPluginFacetImpl extends BaseFacet implements MavenPluginFacet,
                                     .setArtifactId(plugin.getArtifactId())
                                     .setVersion(plugin.getVersion()))
 
-                    .setConfiguration(adapter.getPluginConfiguration());
+                    .setConfiguration(adapter.getConfig());
 
             plugins.add(pluginBuilder);
         }

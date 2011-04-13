@@ -45,14 +45,14 @@ public class MavenPluginAdapter extends Plugin implements MavenPlugin {
     }
 
     private Xpp3Dom parseConfig(MavenPlugin mavenPlugin) {
-        if (mavenPlugin.getPluginConfiguration() == null) {
+        if (mavenPlugin.getConfig() == null) {
             return null;
         }
 
         try {
             return Xpp3DomBuilder.build(
                     new ByteArrayInputStream(
-                            mavenPlugin.getPluginConfiguration().toString().getBytes()), "UTF-8");
+                            mavenPlugin.getConfig().toString().getBytes()), "UTF-8");
         } catch (Exception ex) {
             throw new RuntimeException("Exception while parsing configuration", ex);
         }
@@ -68,7 +68,7 @@ public class MavenPluginAdapter extends Plugin implements MavenPlugin {
     }
 
     @Override
-    public MavenPluginConfiguration getPluginConfiguration() {
+    public MavenPluginConfiguration getConfig() {
         Xpp3Dom dom = (Xpp3Dom) super.getConfiguration();
 
 

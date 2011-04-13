@@ -23,7 +23,6 @@
 package org.jboss.seam.forge.project.mavenplugins;
 
 import org.jboss.seam.forge.project.dependencies.Dependency;
-import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 
 /**
  * @author <a href="mailto:paul.bakker.nl@gmail.com">Paul Bakker</a>
@@ -37,7 +36,7 @@ public class MavenPluginImpl implements MavenPlugin {
 
     public MavenPluginImpl(MavenPlugin plugin) {
         this.dependency = plugin.getDependency();
-        this.configuration = plugin.getPluginConfiguration();
+        this.configuration = plugin.getConfig();
     }
 
 
@@ -51,7 +50,7 @@ public class MavenPluginImpl implements MavenPlugin {
     }
 
     @Override
-    public MavenPluginConfiguration getPluginConfiguration() {
+    public MavenPluginConfiguration getConfig() {
         return configuration;
     }
 

@@ -48,7 +48,7 @@ public class MavenPluginConfigurationImplTest
    public void setup() throws Exception
    {
       MavenPluginAdapter adapter = new MavenPluginAdapter(createMavenPlugin());
-      pluginConfiguration = adapter.getPluginConfiguration();
+      pluginConfiguration = adapter.getConfig();
    }
 
    @Test

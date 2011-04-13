@@ -61,8 +61,8 @@ public class MavenPluginBuilder implements MavenPlugin, MavenPluginElement {
     }
 
     @Override
-    public MavenPluginConfiguration getPluginConfiguration() {
-        return plugin.getPluginConfiguration();
+    public MavenPluginConfiguration getConfig() {
+        return plugin.getConfig();
     }
 
     @Override
@@ -73,8 +73,8 @@ public class MavenPluginBuilder implements MavenPlugin, MavenPluginElement {
 
     public MavenPluginConfigurationBuilder createConfiguration() {
         MavenPluginConfigurationBuilder builder;
-        if (plugin.getPluginConfiguration() != null) {
-            builder = MavenPluginConfigurationBuilder.create(plugin.getPluginConfiguration(), this);
+        if (plugin.getConfig() != null) {
+            builder = MavenPluginConfigurationBuilder.create(plugin.getConfig(), this);
         } else {
             builder = MavenPluginConfigurationBuilder.create(this);
         }

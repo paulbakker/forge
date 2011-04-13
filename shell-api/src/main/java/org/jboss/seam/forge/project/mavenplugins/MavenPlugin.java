@@ -34,5 +34,5 @@ public interface MavenPlugin extends MavenPluginElement
 {
    Dependency getDependency();
 
-   MavenPluginConfiguration getPluginConfiguration();
+   MavenPluginConfiguration getConfig();
 }
